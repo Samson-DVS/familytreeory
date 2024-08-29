@@ -4,9 +4,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import FamilyMemberForm from '../components/FamilyMemberForm';
 import FamilyTreeVisualization from '../components/FamilyTreeVisualization';
 import FamilyMemberSidebar from '../components/FamilyMemberSidebar';
+import RelationshipMapper from '../components/RelationshipMapper';
 
 const FamilyTree = () => {
   const [familyMembers, setFamilyMembers] = useState([]);
+  const [relationships, setRelationships] = useState([]);
   const [selectedMember, setSelectedMember] = useState(null);
 
   const addFamilyMember = (member) => {
@@ -21,7 +23,12 @@ const FamilyTree = () => {
 
   const deleteFamilyMember = (memberId) => {
     setFamilyMembers(familyMembers.filter(member => member.id !== memberId));
+    setRelationships(relationships.filter(rel => rel.person1 !== memberId && rel.person2 !== memberId));
     setSelectedMember(null);
+  };
+
+  const addRelationship = (relationship) => {
+    setRelationships([...relationships, relationship]);
   };
 
   const exportFamilyTree = () => {
@@ -45,19 +52,26 @@ const FamilyTree = () => {
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-200">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="flex flex-col md:flex-row gap-6">
-              <Card className="w-full md:w-1/3">
-                <CardContent>
-                  <FamilyMemberForm 
-                    onSubmit={selectedMember ? updateFamilyMember : addFamilyMember}
-                    initialData={selectedMember}
-                    onDelete={deleteFamilyMember}
-                  />
-                </CardContent>
-              </Card>
+              <div className="w-full md:w-1/3 space-y-6">
+                <Card>
+                  <CardContent>
+                    <FamilyMemberForm 
+                      onSubmit={selectedMember ? updateFamilyMember : addFamilyMember}
+                      initialData={selectedMember}
+                      onDelete={deleteFamilyMember}
+                    />
+                  </CardContent>
+                </Card>
+                <RelationshipMapper 
+                  familyMembers={familyMembers}
+                  onAddRelationship={addRelationship}
+                />
+              </div>
               <Card className="w-full md:w-2/3">
                 <CardContent>
                   <FamilyTreeVisualization 
                     familyMembers={familyMembers}
+                    relationships={relationships}
                     onSelectMember={setSelectedMember}
                   />
                 </CardContent>

@@ -11,18 +11,30 @@ const FamilyMemberNode = ({ member, onSelect }) => (
   </Card>
 );
 
-const renderFamilyTree = (members, rootMember, onSelect) => {
-  const children = members.filter(m => m.parentId === rootMember.id);
+const renderFamilyTree = (members, relationships, rootMember, onSelect) => {
+  const children = relationships
+    .filter(rel => rel.person1 === rootMember.id && rel.relationshipType === 'child')
+    .map(rel => members.find(m => m.id === rel.person2));
   
+  const spouse = relationships
+    .find(rel => (rel.person1 === rootMember.id || rel.person2 === rootMember.id) && rel.relationshipType === 'spouse');
+  
+  const spouseMember = spouse ? members.find(m => m.id === (spouse.person1 === rootMember.id ? spouse.person2 : spouse.person1)) : null;
+
   return (
-    <TreeNode label={<FamilyMemberNode member={rootMember} onSelect={onSelect} />}>
-      {children.map(child => renderFamilyTree(members, child, onSelect))}
+    <TreeNode label={
+      <div className="flex items-center space-x-2">
+        <FamilyMemberNode member={rootMember} onSelect={onSelect} />
+        {spouseMember && <FamilyMemberNode member={spouseMember} onSelect={onSelect} />}
+      </div>
+    }>
+      {children.map(child => renderFamilyTree(members, relationships, child, onSelect))}
     </TreeNode>
   );
 };
 
-const FamilyTreeVisualization = ({ familyMembers, onSelectMember }) => {
-  const rootMembers = familyMembers.filter(m => !m.parentId);
+const FamilyTreeVisualization = ({ familyMembers, relationships, onSelectMember }) => {
+  const rootMembers = familyMembers.filter(m => !relationships.some(rel => rel.person2 === m.id && rel.relationshipType === 'child'));
 
   return (
     <div className="overflow-auto h-full">
@@ -32,7 +44,7 @@ const FamilyTreeVisualization = ({ familyMembers, onSelectMember }) => {
         lineBorderRadius={'10px'}
         label={<div>Family Tree</div>}
       >
-        {rootMembers.map(root => renderFamilyTree(familyMembers, root, onSelectMember))}
+        {rootMembers.map(root => renderFamilyTree(familyMembers, relationships, root, onSelectMember))}
       </Tree>
     </div>
   );
