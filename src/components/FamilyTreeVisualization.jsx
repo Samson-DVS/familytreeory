@@ -1,21 +1,39 @@
 import React from 'react';
+import { Tree, TreeNode } from 'react-organizational-chart';
 import { Card, CardContent } from "@/components/ui/card";
 
-const FamilyTreeVisualization = ({ familyMembers }) => {
+const FamilyMemberNode = ({ member, onSelect }) => (
+  <Card className="w-48 cursor-pointer" onClick={() => onSelect(member)}>
+    <CardContent className="p-2 text-center">
+      <h3 className="font-bold">{member.name}</h3>
+      <p className="text-sm">{member.dateOfBirth} - {member.dateOfDeath || 'Present'}</p>
+    </CardContent>
+  </Card>
+);
+
+const renderFamilyTree = (members, rootMember, onSelect) => {
+  const children = members.filter(m => m.parentId === rootMember.id);
+  
   return (
-    <div className="space-y-4">
-      {familyMembers.map((member) => (
-        <Card key={member.id}>
-          <CardContent className="p-4">
-            <h3 className="font-bold">{member.name}</h3>
-            <p>Born: {member.dateOfBirth}</p>
-            {member.dateOfDeath && <p>Died: {member.dateOfDeath}</p>}
-            <p>Gender: {member.gender}</p>
-            <p>Relationship: {member.relationship}</p>
-            {member.notes && <p>Notes: {member.notes}</p>}
-          </CardContent>
-        </Card>
-      ))}
+    <TreeNode label={<FamilyMemberNode member={rootMember} onSelect={onSelect} />}>
+      {children.map(child => renderFamilyTree(members, child, onSelect))}
+    </TreeNode>
+  );
+};
+
+const FamilyTreeVisualization = ({ familyMembers, onSelectMember }) => {
+  const rootMembers = familyMembers.filter(m => !m.parentId);
+
+  return (
+    <div className="overflow-auto h-full">
+      <Tree
+        lineWidth={'2px'}
+        lineColor={'#bbb'}
+        lineBorderRadius={'10px'}
+        label={<div>Family Tree</div>}
+      >
+        {rootMembers.map(root => renderFamilyTree(familyMembers, root, onSelectMember))}
+      </Tree>
     </div>
   );
 };

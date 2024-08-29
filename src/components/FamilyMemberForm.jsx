@@ -1,16 +1,27 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 
-const FamilyMemberForm = ({ onSubmit }) => {
-  const { register, handleSubmit, reset } = useForm();
+const FamilyMemberForm = ({ onSubmit, initialData, onDelete }) => {
+  const { register, handleSubmit, reset, setValue } = useForm();
+
+  useEffect(() => {
+    if (initialData) {
+      Object.keys(initialData).forEach(key => {
+        setValue(key, initialData[key]);
+      });
+    } else {
+      reset();
+    }
+  }, [initialData, setValue, reset]);
 
   const submitForm = (data) => {
-    onSubmit(data);
-    reset();
+    onSubmit(initialData ? { ...data, id: initialData.id } : data);
+    if (!initialData) reset();
   };
 
   return (
@@ -29,7 +40,7 @@ const FamilyMemberForm = ({ onSubmit }) => {
       </div>
       <div>
         <Label htmlFor="gender">Gender</Label>
-        <Select onValueChange={(value) => register('gender').onChange({ target: { value } })}>
+        <Select onValueChange={(value) => setValue('gender', value)}>
           <SelectTrigger>
             <SelectValue placeholder="Select gender" />
           </SelectTrigger>
@@ -41,14 +52,17 @@ const FamilyMemberForm = ({ onSubmit }) => {
         </Select>
       </div>
       <div>
-        <Label htmlFor="relationship">Relationship to User</Label>
-        <Input id="relationship" {...register('relationship')} />
-      </div>
-      <div>
         <Label htmlFor="notes">Additional Notes</Label>
-        <Input id="notes" {...register('notes')} />
+        <Textarea id="notes" {...register('notes')} />
       </div>
-      <Button type="submit">Add Family Member</Button>
+      <div className="flex justify-between">
+        <Button type="submit">{initialData ? 'Update' : 'Add'} Family Member</Button>
+        {initialData && (
+          <Button type="button" variant="destructive" onClick={() => onDelete(initialData.id)}>
+            Delete
+          </Button>
+        )}
+      </div>
     </form>
   );
 };
