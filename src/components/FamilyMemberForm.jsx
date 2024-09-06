@@ -3,25 +3,21 @@ import { useForm } from 'react-hook-form';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 
 const FamilyMemberForm = ({ onSubmit, initialData, onDelete }) => {
-  const { register, handleSubmit, reset, setValue } = useForm();
+  const { register, handleSubmit, reset } = useForm();
 
   useEffect(() => {
     if (initialData) {
-      Object.keys(initialData).forEach(key => {
-        setValue(key, initialData[key]);
-      });
+      reset(initialData);
     } else {
-      reset();
+      reset({ name: '' });
     }
-  }, [initialData, setValue, reset]);
+  }, [initialData, reset]);
 
   const submitForm = (data) => {
     onSubmit(initialData ? { ...data, id: initialData.id } : data);
-    if (!initialData) reset();
+    if (!initialData) reset({ name: '' });
   };
 
   return (
@@ -29,31 +25,6 @@ const FamilyMemberForm = ({ onSubmit, initialData, onDelete }) => {
       <div>
         <Label htmlFor="name">Name</Label>
         <Input id="name" {...register('name', { required: true })} />
-      </div>
-      <div>
-        <Label htmlFor="dateOfBirth">Date of Birth</Label>
-        <Input id="dateOfBirth" type="date" {...register('dateOfBirth')} />
-      </div>
-      <div>
-        <Label htmlFor="dateOfDeath">Date of Death (if applicable)</Label>
-        <Input id="dateOfDeath" type="date" {...register('dateOfDeath')} />
-      </div>
-      <div>
-        <Label htmlFor="gender">Gender</Label>
-        <Select onValueChange={(value) => setValue('gender', value)}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select gender" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="male">Male</SelectItem>
-            <SelectItem value="female">Female</SelectItem>
-            <SelectItem value="other">Other</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <div>
-        <Label htmlFor="notes">Additional Notes</Label>
-        <Textarea id="notes" {...register('notes')} />
       </div>
       <div className="flex justify-between">
         <Button type="submit">{initialData ? 'Update' : 'Add'} Family Member</Button>
